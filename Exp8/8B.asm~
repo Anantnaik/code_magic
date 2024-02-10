@@ -1,0 +1,112 @@
+%macro write 2
+mov eax,4
+mov ebx,1
+mov ecx,%1
+mov edx,%2
+int 80h
+%endmacro
+
+%macro read 2
+mov eax,3
+mov ebx,2
+mov ecx,%1
+mov edx,%2
+int 80h
+%endmacro
+
+section .data
+
+
+display db'Array is:20,-32,45,32,-43,11,34,66,-46',10
+dis_len equ $-display
+
+output1 db'Count of positive numbers:'
+o_len1 equ $-output1
+
+output2 db'Count of negative numbers:'
+o_len2 equ $-output2
+
+array dw 20,-32,45,32,-43,11,34,66,-46
+len equ 9
+
+n_pos dw 0
+n_neg dw 0
+
+newline db 10
+tab db 11
+
+section .bss
+
+dis_buffer resb 2
+
+section .text
+global _start
+_start:
+
+write display,dis_len
+
+mov esi,array
+mov ecx,len
+
+check:
+
+BT word[esi],15
+JC Negative
+JMP Positive
+
+Positive:
+
+inc byte[n_pos]
+JMP end
+
+Negative:
+
+inc byte[n_neg]
+JMP end
+
+end:
+
+inc esi
+inc esi
+loop check
+
+output:
+
+write output1,o_len1
+mov bl,[n_pos]
+CALL hex_ascii
+write newline,1
+
+write output2,o_len2
+mov bl,[n_neg]
+CALL hex_ascii
+write newline,1
+
+mov eax,1
+mov ebx,0
+int 80h
+
+hex_ascii:
+
+mov ecx,2
+mov edi,dis_buffer
+
+DUP:
+rol bl,04
+mov al,bl
+and al,0fh
+cmp al,09h
+jbe NEXT
+add al,07h
+
+NEXT:
+add al,30h
+mov [edi],al
+inc edi
+loop DUP
+write dis_buffer,2
+RET
+
+
+
+

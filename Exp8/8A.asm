@@ -1,0 +1,95 @@
+%macro write 2
+mov eax,4
+mov ebx,1
+mov ecx,%1
+mov edx,%2
+int 80h
+%endmacro
+
+%macro read 2
+mov eax,3
+mov ebx,2
+mov ecx,%1
+mov edx,%2
+int 80h
+%endmacro
+
+section .data
+
+input1 db'Enter number of elements:'
+i_len1 equ $-input1
+
+input2 db'Enter elements in array:',10
+i_len2 equ $-input2
+
+output1 db'Array is:',10
+o_len equ $-output1
+
+array times 10 dw 0
+len equ 10
+
+newline db 10
+tab db 11
+
+section .bss
+
+num resb 10
+i resb 10
+element resb 10
+
+section .text
+global _start
+_start:
+
+write input1,i_len1
+read num,10
+write input2,i_len2
+mov byte[i],0
+mov esi,array
+;mov eax,[num]
+
+input:
+
+read element,2
+mov ebx,[element]
+mov [esi],ebx
+
+inc esi
+inc byte[i]
+
+mov al,[i]
+mov bl,[num]
+sub bl,'0'
+CMP al,bl
+JE exit_input
+JMP input
+
+exit_input:
+
+write output1,o_len
+mov byte[i],0
+mov esi,array
+
+output:
+
+mov ebx,[esi]
+mov [element],ebx
+write element,1
+write newline,1
+
+inc esi
+inc byte[i]
+
+mov al,[i]
+mov bl,[num]
+sub bl,'0'
+CMP al,bl
+JL output
+
+mov eax,1
+mov ebx,0
+int 80h
+
+
+
+
